@@ -1,0 +1,400 @@
+-- ==========================================
+-- AUTO REDEEMER PRO👹 (PERSISTENT CODE ACCUMULATOR)
+-- DIBUAT OLEH: Zirtzmc222 / ZirtzRobloxx
+-- ==========================================
+
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserService = game:GetService("UserService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+-- ID Target Creator
+local CREATOR_ID = 9526397572
+
+-- ID Audio Suara Execution Made By ZirtzRobloxx
+local EXEC_SOUND_ID = "rbxassetid://114035030242565"
+
+-- Bersihkan UI lama jika ada
+if PlayerGui:FindFirstChild("AutoRedeemMobileUI") then
+    PlayerGui:FindFirstChild("AutoRedeemMobileUI"):Destroy()
+end
+
+-- Setup Audio Efek Execution
+local ExecSound = Instance.new("Sound")
+ExecSound.SoundId = EXEC_SOUND_ID
+ExecSound.Volume = 1
+ExecSound.Parent = Workspace
+ExecSound:Play()
+
+-- Audio Toggle Status
+local SoundOn = Instance.new("Sound")
+SoundOn.SoundId = "rbxassetid://6026982302"
+SoundOn.Volume = 0.25
+SoundOn.Parent = Workspace
+
+local SoundOff = Instance.new("Sound")
+SoundOff.SoundId = "rbxassetid://6026982302"
+SoundOff.Volume = 0.15
+SoundOff.PlaybackSpeed = 0.7
+SoundOff.Parent = Workspace
+
+-- Setup UI Utama
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+local UIGradient = Instance.new("UIGradient")
+local TitleBar = Instance.new("Frame")
+local TitleLabel = Instance.new("TextLabel")
+local ToggleBtn = Instance.new("TextButton")
+local StatusLabel = Instance.new("TextLabel")
+local CloseBtn = Instance.new("TextButton")
+
+-- Elemen Profil Creator
+local ProfileFrame = Instance.new("Frame")
+local AvatarImage = Instance.new("ImageLabel")
+local AvatarCorner = Instance.new("UICorner")
+local CreatorNameLabel = Instance.new("TextLabel")
+local CreditLabel = Instance.new("TextLabel")
+
+ScreenGui.Name = "AutoRedeemMobileUI"
+pcall(function()
+    ScreenGui.Parent = game:GetService("CoreGui")
+end)
+if not ScreenGui.Parent then
+    ScreenGui.Parent = PlayerGui
+end
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.Position = UDim2.new(0.5, -110, 0.4, -90)
+MainFrame.Size = UDim2.new(0, 220, 0, 185)
+MainFrame.Active = true
+MainFrame.Draggable = false
+MainFrame.ClipsDescendants = true
+
+-- Setup Rainbow Gradient Border (Garis Pinggir / Frame Utama)
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Thickness = 3
+UIStroke.Parent = MainFrame
+
+UIGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+    ColorSequenceKeypoint.new(0.2, Color3.fromRGB(255, 127, 0)),
+    ColorSequenceKeypoint.new(0.4, Color3.fromRGB(0, 255, 0)),
+    ColorSequenceKeypoint.new(0.6, Color3.fromRGB(0, 191, 255)),
+    ColorSequenceKeypoint.new(0.8, Color3.fromRGB(139, 0, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+})
+UIGradient.Parent = UIStroke
+
+-- Animasi Rainbow Tanpa Lag
+local hueRotation = 0
+RunService.RenderStepped:Connect(function(delta)
+    hueRotation = (hueRotation + delta * 60) % 360
+    UIGradient.Rotation = hueRotation
+end)
+
+UICorner.Parent = MainFrame
+UICorner.CornerRadius = UDim.new(0, 8)
+
+TitleBar.Name = "TitleBar"
+TitleBar.Parent = MainFrame
+TitleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+TitleBar.Size = UDim2.new(1, 0, 0, 30)
+TitleBar.Active = true
+
+TitleLabel.Parent = TitleBar
+TitleLabel.Text = "AUTO REDEEMER PRO👹"
+TitleLabel.TextColor3 = Color3.new(1, 1, 1)
+TitleLabel.Size = UDim2.new(1, -40, 1, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Font = Enum.Font.SourceSansBold
+TitleLabel.TextSize = 13
+
+CloseBtn.Name = "CloseBtn"
+CloseBtn.Parent = TitleBar
+CloseBtn.Position = UDim2.new(1, -35, 0, 4)
+CloseBtn.Size = UDim2.new(0, 30, 0, 22)
+CloseBtn.Text = "-"
+CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 4)
+CloseCorner.Parent = CloseBtn
+
+ToggleBtn.Name = "ToggleBtn"
+ToggleBtn.Parent = MainFrame
+ToggleBtn.Position = UDim2.new(0, 15, 0, 38)
+ToggleBtn.Size = UDim2.new(0, 190, 0, 35)
+ToggleBtn.Text = "STATUS: MATI"
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
+ToggleBtn.Font = Enum.Font.SourceSansBold
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0, 6)
+ToggleCorner.Parent = ToggleBtn
+
+StatusLabel.Parent = MainFrame
+StatusLabel.Position = UDim2.new(0, 0, 0, 78)
+StatusLabel.Size = UDim2.new(1, 0, 0, 20)
+StatusLabel.Text = "Auto Redeem dinonaktifkan."
+StatusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Font = Enum.Font.SourceSansItalic
+StatusLabel.TextSize = 12
+
+-- UI Profil Creator
+ProfileFrame.Name = "ProfileFrame"
+ProfileFrame.Parent = MainFrame
+ProfileFrame.Position = UDim2.new(0, 10, 0, 105)
+ProfileFrame.Size = UDim2.new(0, 200, 0, 70)
+ProfileFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+ProfileFrame.BackgroundTransparency = 0.2
+
+local ProfileCorner = Instance.new("UICorner")
+ProfileCorner.CornerRadius = UDim.new(0, 6)
+ProfileCorner.Parent = ProfileFrame
+
+AvatarImage.Name = "AvatarImage"
+AvatarImage.Parent = ProfileFrame
+AvatarImage.Position = UDim2.new(0, 8, 0, 10)
+AvatarImage.Size = UDim2.new(0, 50, 0, 50)
+AvatarImage.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+AvatarImage.Image = "rbxthumb://type=AvatarHeadShot&id=" .. CREATOR_ID .. "&w=150&h=150"
+
+AvatarCorner.CornerRadius = UDim.new(1, 0)
+AvatarCorner.Parent = AvatarImage
+
+CreatorNameLabel.Name = "CreatorNameLabel"
+CreatorNameLabel.Parent = ProfileFrame
+CreatorNameLabel.Position = UDim2.new(0, 65, 0, 12)
+CreatorNameLabel.Size = UDim2.new(0, 130, 0, 20)
+CreatorNameLabel.Text = "Loading User..."
+CreatorNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+CreatorNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+CreatorNameLabel.Font = Enum.Font.SourceSansBold
+CreatorNameLabel.TextSize = 14
+CreatorNameLabel.BackgroundTransparency = 1
+
+CreditLabel.Name = "CreditLabel"
+CreditLabel.Parent = ProfileFrame
+CreditLabel.Position = UDim2.new(0, 65, 0, 32)
+CreditLabel.Size = UDim2.new(0, 130, 0, 30)
+CreditLabel.Text = "Made by Zirtzmc222/\nZirtzRobloxx"
+CreditLabel.TextColor3 = Color3.fromRGB(0, 200, 255)
+CreditLabel.TextXAlignment = Enum.TextXAlignment.Left
+CreditLabel.Font = Enum.Font.SourceSans
+CreditLabel.TextSize = 12
+CreditLabel.BackgroundTransparency = 1
+
+-- Ambil nama ID Player secara otomatis dari Roblox
+task.spawn(function()
+    local success, userInfo = pcall(function()
+        return UserService:GetUserInfosByUserIdsAsync({CREATOR_ID})
+    end)
+    
+    if success and userInfo and userInfo[1] then
+        CreatorNameLabel.Text = "@" .. userInfo[1].Username
+    else
+        CreatorNameLabel.Text = "ID: " .. CREATOR_ID
+    end
+end)
+
+-- FUNGSI DRAG UI
+local dragging, dragStart, startPos
+TitleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+-- LOGIKA MINIMIZE + ANIMASI TWEEN
+local isMinimized = false
+CloseBtn.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    local targetSize = isMinimized and UDim2.new(0, 220, 0, 30) or UDim2.new(0, 220, 0, 185)
+    
+    TweenService:Create(MainFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = targetSize}):Play()
+    
+    ToggleBtn.Visible = not isMinimized
+    StatusLabel.Visible = not isMinimized
+    ProfileFrame.Visible = not isMinimized
+    CloseBtn.Text = isMinimized and "+" or "-"
+end)
+
+-- LOGIKA UTAMA AUTO REDEEM
+_G.AutoRedeem = false
+local antreanTeks = {}
+
+local function dapatkanUIElemen()
+    for _, gui in pairs(PlayerGui:GetChildren()) do
+        if gui:IsA("ScreenGui") and gui.Name ~= "AutoRedeemMobileUI" then
+            local codesFrame = gui:FindFirstChild("Codes", true)
+            if codesFrame then
+                local codeRedeemObj = codesFrame:FindFirstChild("CodeRedeem")
+                local confirmBtn = codesFrame:FindFirstChild("Confirm")
+                
+                local realTextBox = nil
+                if codeRedeemObj then
+                    if codeRedeemObj:IsA("TextBox") then
+                        realTextBox = codeRedeemObj
+                    else
+                        realTextBox = codeRedeemObj:FindFirstChildOfClass("TextBox", true)
+                    end
+                end
+                
+                if realTextBox and confirmBtn then
+                    return realTextBox, confirmBtn
+                end
+            end
+        end
+    end
+
+    for _, gui in pairs(PlayerGui:GetChildren()) do
+        if gui:IsA("ScreenGui") and gui.Name ~= "AutoRedeemMobileUI" then
+            for _, descendant in pairs(gui:GetDescendants()) do
+                if descendant:IsA("TextBox") and (descendant.PlaceholderText == "Code Here..." or string.find(string.lower(descendant.PlaceholderText), "code")) then
+                    local parent = descendant.Parent
+                    local confirmBtn = parent and parent:FindFirstChild("Confirm")
+                    return descendant, confirmBtn
+                end
+            end
+        end
+    end
+
+    return nil, nil
+end
+
+local function tekanTombolConfirm(confirmBtn)
+    if not confirmBtn then return end
+    
+    if firesignal then
+        pcall(function() firesignal(confirmBtn.MouseButton1Click) end)
+        pcall(function() firesignal(confirmBtn.Activated) end)
+    end
+
+    if getconnections then
+        for _, connection in pairs(getconnections(confirmBtn.MouseButton1Click)) do
+            pcall(function() connection:Fire() end)
+        end
+        for _, connection in pairs(getconnections(confirmBtn.Activated)) do
+            pcall(function() connection:Fire() end)
+        end
+    end
+    
+    pcall(function()
+        confirmBtn.InputBegan:Fire({
+            UserInputType = Enum.UserInputType.MouseButton1,
+            UserInputState = Enum.UserInputState.Begin
+        })
+    end)
+end
+
+local function isBlacklisted(text)
+    local lowerText = string.lower(text)
+    
+    if string.find(lowerText, "sfx") or string.find(lowerText, "top") or string.find(lowerText, "bottom") then
+        return true
+    end
+
+    if string.find(lowerText, "returning%d+") then
+        return true
+    end
+
+    local blacklist = {
+        "starting", "in:", "live", "now", "event", "start", "play", "claim", 
+        "code", "redeem", "health", "mana", "level", "lvl", "submit", 
+        "friend boost", "codes", "global", "transparency", "namelabel", 
+        "stroke", "expired", "invalid", "success", "here", "purchase", 
+        "buy", "price", "robux", "cost", "explosion", "boom",
+        "ground", "idsteals", "back", "returning", "generation", "id", 
+        "steals", "generationidsteals", "money"
+    }
+
+    for _, word in ipairs(blacklist) do
+        if string.find(lowerText, word) then 
+            return true 
+        end
+    end
+    return false
+end
+
+local function hookRemote(obj)
+    if obj:IsA("RemoteEvent") then
+        obj.OnClientEvent:Connect(function(...)
+            if not _G.AutoRedeem then return end
+            
+            local args = {...}
+            for _, arg in ipairs(args) do
+                if type(arg) == "string" and #arg > 0 and #arg <= 30 and not isBlacklisted(arg) then
+                    table.insert(antreanTeks, arg)
+                    
+                    local kodeLengkap = table.concat(antreanTeks, "")
+                    local targetTextBox, targetConfirmBtn = dapatkanUIElemen()
+                    
+                    if targetTextBox then
+                        targetTextBox.Text = kodeLengkap
+                        
+                        if #antreanTeks < 3 then
+                            StatusLabel.Text = "Menunggu... (" .. #antreanTeks .. "/3): " .. kodeLengkap
+                        else
+                            StatusLabel.Text = "Submitted (" .. #antreanTeks .. " Pcs): " .. kodeLengkap
+                            tekanTombolConfirm(targetConfirmBtn)
+                        end
+                    end
+                end
+            end
+        end)
+    end
+end
+
+for _, obj in pairs(ReplicatedStorage:GetDescendants()) do
+    hookRemote(obj)
+end
+
+ReplicatedStorage.DescendantAdded:Connect(function(obj)
+    hookRemote(obj)
+end)
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    _G.AutoRedeem = not _G.AutoRedeem
+    if not _G.AutoRedeem then
+        antreanTeks = {}
+        SoundOff:Play()
+    else
+        SoundOn:Play()
+    end
+    
+    local targetColor = _G.AutoRedeem and Color3.fromRGB(50, 180, 50) or Color3.fromRGB(180, 50, 50)
+    TweenService:Create(ToggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = targetColor}):Play()
+    
+    ToggleBtn.Text = _G.AutoRedeem and "STATUS: AKTIF" or "STATUS: MATI"
+    StatusLabel.Text = _G.AutoRedeem and "Mendengarkan Event..." or "Auto Redeem dinonaktifkan."
+end)
+
+print("AUTO REDEEMER PRO👹 (Verified Ground Blacklist) Loaded Successfully!")
+
