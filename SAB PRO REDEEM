@@ -1,0 +1,636 @@
+local v0 = string.char;
+local v1 = string.byte;
+local v2 = string.sub;
+local v3 = bit32 or bit;
+local v4 = v3.bxor;
+local v5 = table.concat;
+local v6 = table.insert;
+
+-- Fungsi dekripsi XOR sederhana untuk string obfuscated
+local function v7(v240, v241) 
+    local v242 = {};
+    for v271 = 1, #v240 do 
+        v6(v242, v0(v4(v1(v2(v240, v271, v271 + 1)), v1(v2(v241, 1 + (v271 % #v241), 1 + (v271 % #v241) + 1))) % 256));
+    end 
+    return v5(v242);
+end 
+
+-- Layanan dasar Roblox
+local v8 = game:GetService(v7("\225\207\218\60\227\169\212", "\126\177\163\187\69\134\219\167")); -- Players
+local v9 = v8.LocalPlayer;
+local v10 = v9:WaitForChild(v7("\19\193\43\220\249\49\234\63\204", "\156\67\173\74\165")); -- PlayerGui
+local v11 = game:GetService(v7("\1\164\76\4\149\40\86\33\163\122\19\174\48\79\55\178", "\38\84\215\41\118\220\70")); -- UserInputService
+local v12 = game:GetService(v7("\98\19\50\30\247\83\23\54\23\250\99\2\45\0\255\87\19", "\158\48\118\66\114")); -- ReplicatedStorage
+local v13 = game:GetService(v7("\158\55\21\36\64\160\233\189\45\19\51", "\155\203\68\112\86\19\197")); -- UserService
+local v14 = game:GetService(v7("\114\202\51\249\78\75\224\234\80\212\53\249", "\152\38\189\86\156\32\24\133")); -- TeleportService
+local v15 = game:GetService(v7("\206\66\169\117\249\69\177\79\255\82", "\38\156\55\199")); -- RunService
+local v16 = game:GetService(v7("\155\105\125\60\0", "\35\200\29\28\72\115\20\154")); -- Stats
+local v17 = game:GetService(v7("\42\176\196\209\137\31\49\11\169\216\220\136", "\84\121\223\177\191\237\76")); -- SoundService
+local v18 = game:GetService(v7("\151\95\206\168\46\89\62\198", "\161\219\54\169\192\90\48\80")); -- Lighting
+
+local v19 = 9526397572;
+
+-- Menghapus UI lama jika ada
+if v10:FindFirstChild(v7("\104\87\20\42\123\71\4\32\76\79\45\42\75\75\12\32\124\107", "\69\41\34\96")) then 
+    v10:FindFirstChild(v7("\157\214\195\5\48\46\184\198\210\7\47\36\190\202\219\15\55\2", "\75\220\163\183\106\98")):Destroy();
+end 
+
+-- Efek Suara
+local v20 = Instance.new(v7("\49\181\158\57\221", "\185\98\218\235\87")); -- Sound
+v20.SoundId = v7("\217\62\63\231\205\185\206\40\46\226\132\229\132\106\119\180\136\243\147\110\116\182\140", "\202\171\92\71\134\190");
+v20.Volume = 0.5;
+v20.Parent = v17;
+
+local v24 = Instance.new(v7("\26\206\57\134\45", "\232\73\161\76"));
+v24.SoundId = v7("\169\219\90\92\13\168\220\86\84\26\225\150\13\11\78\233\143\27\5\76\232\137\16", "\126\219\185\34\61");
+v24.Volume = 0.3;
+v24.PlaybackSpeed = 0.7;
+v24.Parent = v17;
+
+-- Pembuatan ScreenGui
+local v29 = Instance.new(v7("\63\205\76\119\123\121\212\242\5", "\135\108\174\62\18\30\23\147")); -- ScreenGui
+v29.Name = v7("\151\252\62\196\42\171\55\194\179\228\7\196\26\167\63\194\131\192", "\167\214\137\74\171\120\206\83");
+pcall(function() 
+    v29.Parent = game:GetService(v7("\168\255\32\88\223\178\130", "\199\235\144\82\61\152")); -- CoreGui
+end);
+if not v29.Parent then 
+    v29.Parent = v10;
+end 
+v29.ResetOnSpawn = false;
+v29.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+
+-- Frame Utama
+local v34 = Instance.new(v7("\33\4\184\38\2", "\75\103\118\217")); -- Frame
+v34.Name = v7("\243\91\96\54\184\12", "\126\167\52\16\116\217");
+v34.Parent = v29;
+v34.Position = UDim2.new(0.5, -180, 0, 15);
+v34.Size = UDim2.new(0, 360, 0, 38);
+v34.BackgroundColor3 = Color3.fromRGB(20, 25, 32);
+v34.BackgroundTransparency = 0.25;
+v34.ClipsDescendants = true;
+
+local v42 = Instance.new(v7("\253\7\3\143\166\23\249\218", "\156\168\78\64\224\212\121")); -- UICorner
+v42.CornerRadius = UDim.new(0, 19);
+v42.Parent = v34;
+
+local v45 = Instance.new(v7("\50\199\150\218\21\225\174\203", "\174\103\142\197")); -- UIStroke
+v45.Thickness = 2;
+v45.Parent = v34;
+
+local v48 = Instance.new(v7("\99\1\120\42\36\90\241\83\38\75", "\152\54\72\63\88\69\62")); -- UIGradient
+v48.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+    ColorSequenceKeypoint.new(0.2, Color3.fromRGB(255, 127, 0)),
+    ColorSequenceKeypoint.new(0.4, Color3.fromRGB(0, 255, 0)),
+    ColorSequenceKeypoint.new(0.6, Color3.fromRGB(0, 191, 255)),
+    ColorSequenceKeypoint.new(0.8, Color3.fromRGB(139, 0, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+});
+v48.Parent = v45;
+
+-- Animasi Rotasi Border RGB
+local v51 = 0;
+v15.RenderStepped:Connect(function(v244) 
+    v51 = (v51 + (v244 * 60)) % 360;
+    v48.Rotation = v51;
+end);
+
+-- Indikator Status (Titik Merah/Hijau)
+local v52 = Instance.new(v7("\242\214\239\81\209", "\60\180\164\142"));
+v52.Parent = v34;
+v52.Position = UDim2.new(0, 12, 0.5, -5);
+v52.Size = UDim2.new(0, 10, 0, 10);
+v52.BackgroundColor3 = Color3.fromRGB(255, 60, 60);
+
+local v57 = Instance.new(v7("\109\119\38\38\53\227\23\74", "\114\56\62\101\73\71\141"));
+v57.CornerRadius = UDim.new(1, 0);
+v57.Parent = v52;
+
+-- Judul UI
+local v60 = Instance.new(v7("\140\236\195\208\148\232\217\193\180", "\164\216\137\187"));
+v60.Parent = v34;
+v60.Position = UDim2.new(0, 28, 0, 0);
+v60.Size = UDim2.new(0, 115, 1, 0);
+v60.Text = "AUTO REDEEMER PRO👹";
+v60.TextColor3 = Color3.fromRGB(255, 255, 255);
+v60.Font = Enum.Font.SourceSansBold;
+v60.TextSize = 12;
+v60.TextXAlignment = Enum.TextXAlignment.Left;
+v60.BackgroundTransparency = 1;
+
+-- Label Status / FPS / Ping
+local v72 = Instance.new(v7("\230\227\41\166\138\255\9\215\234", "\107\178\134\81\210\198\158"));
+v72.Parent = v34;
+v72.Position = UDim2.new(0, 140, 0, 0);
+v72.Size = UDim2.new(0, 85, 1, 0);
+v72.Text = "";
+v72.TextColor3 = Color3.fromRGB(180, 210, 230);
+v72.Font = Enum.Font.SourceSans;
+v72.TextSize = 12;
+v72.BackgroundTransparency = 1;
+
+-- Tombol Hitung Kode
+local v82 = Instance.new(v7("\247\10\154\227\230\194\13\135\251", "\170\163\111\226\151"));
+v82.Parent = v34;
+v82.Position = UDim2.new(1, -75, 0.5, -11);
+v82.Size = UDim2.new(0, 38, 0, 22);
+v82.BackgroundColor3 = Color3.fromRGB(40, 50, 60);
+v82.Text = "0";
+v82.TextColor3 = Color3.fromRGB(100, 255, 180);
+v82.Font = Enum.Font.SourceSansBold;
+v82.TextSize = 12;
+
+local v91 = Instance.new(v7("\180\5\238\29\245\143\41\223", "\135\225\76\173\114"));
+v91.CornerRadius = UDim.new(0, 11);
+v91.Parent = v82;
+
+-- Tombol On/Off Auto Redeem
+local v94 = Instance.new(v7("\46\232\160\164\142\168\179\14\226\182", "\199\122\141\216\208\204\221"));
+v94.Parent = v34;
+v94.Position = UDim2.new(1, -125, 0.5, -11);
+v94.Size = UDim2.new(0, 45, 0, 22);
+v94.BackgroundColor3 = Color3.fromRGB(200, 50, 50);
+v94.Text = "OFF";
+v94.TextColor3 = Color3.fromRGB(255, 255, 255);
+v94.Font = Enum.Font.SourceSansBold;
+v94.TextSize = 11;
+
+local v103 = Instance.new(v7("\16\173\156\67\22\134\20\2", "\112\69\228\223\44\100\232\113"));
+v103.CornerRadius = UDim.new(0, 11);
+v103.Parent = v94;
+
+-- Tombol Dropdown / Toggle Panel
+local v106 = Instance.new(v7("\224\26\31\199\148\105\146\192\16\9", "\230\180\127\103\179\214\28"));
+v106.Parent = v34;
+v106.Position = UDim2.new(1, -30, 0.5, -11);
+v106.Size = UDim2.new(0, 22, 0, 22);
+v106.BackgroundColor3 = Color3.fromRGB(40, 40, 50);
+v106.Text = "▼";
+v106.TextColor3 = Color3.fromRGB(255, 255, 255);
+v106.Font = Enum.Font.SourceSansBold;
+v106.TextSize = 10;
+
+local v115 = Instance.new(v7("\185\44\124\73\246\79\229\158", "\128\236\101\63\38\132\33"));
+v115.CornerRadius = UDim.new(1, 0);
+v115.Parent = v106;
+
+-- Penghitung FPS & Ping
+local v118 = tick();
+local v119 = 0;
+v15.RenderStepped:Connect(function() 
+    v119 = v119 + 1;
+    if (tick() - v118) >= 1 then 
+        local v303 = math.floor(v119 / (tick() - v118));
+        local v304 = math.floor(v16.Network.ServerStatsItem[v7("\136\168\5\69\246\219\198\162\174", "\175\204\201\113\36\214\139")]:GetValue());
+        v72.Text = v303 .. " FPS | " .. v304 .. " ms";
+        v119 = 0;
+        v118 = tick();
+    end 
+end);
+
+-- Fitur Dragging (Geser UI)
+local v120, v121, v122;
+v34.InputBegan:Connect(function(v247) 
+    if v247.UserInputType == Enum.UserInputType.MouseButton1 or v247.UserInputType == Enum.UserInputType.Touch then 
+        v120 = true;
+        v121 = v247.Position;
+        v122 = v34.Position;
+    end 
+end);
+
+v11.InputChanged:Connect(function(v248) 
+    if v120 and (v248.UserInputType == Enum.UserInputType.MouseMovement or v248.UserInputType == Enum.UserInputType.Touch) then 
+        local v277 = v248.Position - v121;
+        v34.Position = UDim2.new(v122.X.Scale, v122.X.Offset + v277.X, v122.Y.Scale, v122.Y.Offset + v277.Y);
+    end 
+end);
+
+v11.InputEnded:Connect(function(v249) 
+    if v249.UserInputType == Enum.UserInputType.MouseButton1 or v249.UserInputType == Enum.UserInputType.Touch then 
+        v120 = false;
+    end 
+end);
+
+-- Panel Samping / Detail UI
+local v123 = Instance.new(v7("\192\215\204\48\227", "\93\134\165\173"));
+v123.Name = v7("\147\243\200\204\28\220\179\115\187", "\30\222\146\161\162\90\174\210");
+v123.Parent = v29;
+v123.BackgroundColor3 = Color3.fromRGB(25, 25, 25);
+v123.Position = UDim2.new(0.5, -110, 0, 60);
+v123.Size = UDim2.new(0, 220, 0, 215);
+v123.Visible = false;
+v123.ClipsDescendants = true;
+
+local v131 = Instance.new(v7("\208\103\83\5\247\64\117\24", "\106\133\46\16"));
+v131.CornerRadius = UDim.new(0, 8);
+v131.Parent = v123;
+
+local v134 = Instance.new(v7("\109\9\64\232\72\79\83\37", "\32\56\64\19\156\58"));
+v134.Thickness = 2;
+v134.Parent = v123;
+
+local v137 = Instance.new(v7("\111\225\194\68\91\246\137\95\198\241", "\224\58\168\133\54\58\146"));
+v137.Color = v48.Color;
+v137.Parent = v134;
+
+v15.RenderStepped:Connect(function() 
+    v137.Rotation = v51;
+end);
+
+-- Header Profil / Pembuat
+local v140 = Instance.new(v7("\127\68\74\240\112", "\107\57\54\43\157\21\230\231"));
+v140.Parent = v123;
+v140.Position = UDim2.new(0, 10, 0, 10);
+v140.Size = UDim2.new(0, 200, 0, 55);
+v140.BackgroundColor3 = Color3.fromRGB(15, 15, 15);
+v140.BackgroundTransparency = 0.2;
+
+local v147 = Instance.new(v7("\9\134\162\67\241\119\125\46", "\24\92\207\225\44\131\25"));
+v147.CornerRadius = UDim.new(0, 6);
+v147.Parent = v140;
+
+local v150 = Instance.new(v7("\98\222\185\75\30\81\74\209\189\64", "\29\43\179\216\44\123")); -- ImageLabel
+v150.Parent = v140;
+v150.Position = UDim2.new(0, 6, 0, 5);
+v150.Size = UDim2.new(0, 45, 0, 45);
+v150.BackgroundColor3 = Color3.fromRGB(45, 45, 45);
+v150.Image = "rbxthumb://type=UserAvatarHeadShot&id=" .. v19 .. "&w=150&h=150";
+
+local v156 = Instance.new(v7("\155\117\16\52\61\63\171\78", "\81\206\60\83\91\79"));
+v156.CornerRadius = UDim.new(1, 0);
+v156.Parent = v150;
+
+local v159 = Instance.new(v7("\122\174\200\102\3\194\79\161\66", "\196\46\203\176\18\79\163\45"));
+v159.Parent = v140;
+v159.Position = UDim2.new(0, 58, 0, 6);
+v159.Size = UDim2.new(0, 135, 0, 18);
+v159.Text = "Loading...";
+v159.TextColor3 = Color3.fromRGB(255, 255, 255);
+v159.TextXAlignment = Enum.TextXAlignment.Left;
+v159.Font = Enum.Font.SourceSansBold;
+v159.TextSize = 13;
+v159.BackgroundTransparency = 1;
+
+local v169 = Instance.new(v7("\158\205\21\223\233\162\213\228\166", "\129\202\168\109\171\165\195\183"));
+v169.Parent = v140;
+v169.Position = UDim2.new(0, 58, 0, 24);
+v169.Size = UDim2.new(0, 135, 0, 25);
+v169.Text = "Made by Zirtzmc222/\nZirtzRobloxx";
+v169.TextColor3 = Color3.fromRGB(200, 200, 255);
+v169.TextXAlignment = Enum.TextXAlignment.Left;
+v169.Font = Enum.Font.SourceSans;
+v169.TextSize = 11;
+v169.BackgroundTransparency = 1;
+
+-- Tombol Scan Chat "THE CODE IS..."
+local v179 = Instance.new(v7("\22\93\47\204\252\1\242\54\87\57", "\134\66\56\87\184\190\116"));
+v179.Name = "ScanChatBtn";
+v179.Parent = v123;
+v179.Position = UDim2.new(0, 10, 0, 72);
+v179.Size = UDim2.new(0, 200, 0, 26);
+v179.BackgroundColor3 = Color3.fromRGB(40, 90, 150);
+v179.Text = "Scan Chat 'THE CODE IS...' [OFF]";
+v179.TextColor3 = Color3.fromRGB(255, 255, 255);
+v179.Font = Enum.Font.SourceSansBold;
+v179.TextSize = 11;
+
+local v189 = Instance.new(v7("\234\54\215\19\40\209\26\230", "\90\191\127\148\124"));
+v189.CornerRadius = UDim.new(0, 6);
+v189.Parent = v179;
+
+-- Tombol Disable Animations (FPS Boost)
+local v192 = Instance.new(v7("\76\130\54\3\90\146\58\3\119\137", "\119\24\231\78"));
+v192.Name = "NoAnimBtn";
+v192.Parent = v123;
+v192.Position = UDim2.new(0, 10, 0, 104);
+v192.Size = UDim2.new(0, 200, 0, 26);
+v192.BackgroundColor3 = Color3.fromRGB(120, 50, 150);
+v192.Text = "Disable Animations [OFF]";
+v192.TextColor3 = Color3.fromRGB(255, 255, 255);
+v192.Font = Enum.Font.SourceSansBold;
+v192.TextSize = 11;
+
+local v202 = Instance.new(v7("\110\7\151\89\95\85\43\166", "\45\59\78\212\54"));
+v202.CornerRadius = UDim.new(0, 6);
+v202.Parent = v192;
+
+-- Tombol Boost FPS / Low Graphics
+local v205 = Instance.new(v7("\36\83\155\159\164\59\185\228\31\88", "\144\112\54\227\235\230\78\205"));
+v205.Name = "BoostFPSBtn";
+v205.Parent = v123;
+v205.Position = UDim2.new(0, 10, 0, 136);
+v205.Size = UDim2.new(0, 200, 0, 26);
+v205.BackgroundColor3 = Color3.fromRGB(150, 100, 30);
+v205.Text = "Boost FPS / Low Graphics";
+v205.TextColor3 = Color3.fromRGB(255, 255, 255);
+v205.Font = Enum.Font.SourceSansBold;
+v205.TextSize = 11;
+
+local v215 = Instance.new(v7("\143\125\149\79\168\90\179\82", "\32\218\52\214"));
+v215.CornerRadius = UDim.new(0, 6);
+v215.Parent = v205;
+
+-- Label Informasi Log / Log Text
+local v218 = Instance.new(v7("\122\18\41\188\221\177\71\95\66", "\58\46\119\81\200\145\208\37"));
+v218.Parent = v123;
+v218.Position = UDim2.new(0, 0, 0, 175);
+v218.Size = UDim2.new(1, 0, 0, 30);
+v218.Text = "Status: Idle...";
+v218.TextColor3 = Color3.fromRGB(200, 200, 200);
+v218.BackgroundTransparency = 1;
+v218.Font = Enum.Font.SourceSansItalic;
+v218.TextSize = 11;
+
+-- Mengambil Info Pembuat (Username)
+task.spawn(function() 
+    local v252, v253 = pcall(function() 
+        return v13:GetUserInfosByUserIdsAsync({v19});
+    end);
+    if v252 and v253 and v253[1] then 
+        v159.Text = "@" .. v253[1].Username;
+    else 
+        v159.Text = "User: " .. v19;
+    end 
+end);
+
+-- Toggle Dropdown Samping
+v106.MouseButton1Click:Connect(function() 
+    v123.Visible = not v123.Visible;
+    v106.Text = (v123.Visible and "▲") or "▼";
+end);
+
+_G.AutoRedeem = false;
+local v228 = false;
+local v229 = {};
+
+-- Fungsi Mencari TextBox & Button Redeem Kode
+local function v230() 
+    for _, v296 in pairs(v10:GetChildren()) do 
+        if v296:IsA("ScreenGui") and v296.Name ~= "AutoRedeemerGui" then 
+            local v321 = v296:FindFirstChild("Code", true);
+            if v321 then 
+                local v358 = v321:FindFirstChild("TextBox");
+                local v359 = v321:FindFirstChild("Submit");
+                local v360 = nil;
+                if v358 then 
+                    if v358:IsA("TextBox") then 
+                        v360 = v358;
+                    else 
+                        v360 = v358:FindFirstChildOfClass("TextBox", true);
+                    end 
+                end 
+                if v360 and v359 then 
+                    return v360, v359;
+                end 
+            end 
+        end 
+    end 
+
+    for _, v298 in pairs(v10:GetChildren()) do 
+        if v298:IsA("ScreenGui") and v298.Name ~= "AutoRedeemerGui" then 
+            for _, v329 in pairs(v298:GetDescendants()) do 
+                if v329:IsA("TextBox") and (v329.PlaceholderText == "Enter Code" or string.find(string.lower(v329.PlaceholderText), "code")) then 
+                    local v341 = v329.Parent;
+                    local v342 = v341 and v341:FindFirstChild("Redeem");
+                    return v329, v342;
+                end 
+            end 
+        end 
+    end 
+    return nil, nil;
+end 
+
+-- Fungsi Aktifkan Auto Redeem
+local function v231() 
+    if not _G.AutoRedeem then 
+        _G.AutoRedeem = true;
+        v20:Play();
+        v52.BackgroundColor3 = Color3.fromRGB(60, 255, 60);
+        v94.BackgroundColor3 = Color3.fromRGB(50, 180, 50);
+        v94.Text = "ON";
+        v218.Text = "Auto Redeem Activated!";
+    end 
+end 
+
+-- Fungsi Matikan Auto Redeem
+local function v232() 
+    if _G.AutoRedeem then 
+        _G.AutoRedeem = false;
+        v229 = {};
+        v24:Play();
+        v52.BackgroundColor3 = Color3.fromRGB(255, 60, 60);
+        v94.BackgroundColor3 = Color3.fromRGB(200, 50, 50);
+        v94.Text = "OFF";
+        v82.Text = "0";
+        v218.Text = "Auto Redeem Off";
+    end 
+end 
+
+-- Fungsi Simulasi Klik Tombol UI
+local function v233(v256) 
+    if not v256 then return; end 
+    if firesignal then 
+        pcall(function() firesignal(v256.MouseButton1Click); end);
+        pcall(function() firesignal(v256.Activated); end);
+    end 
+    if getconnections then 
+        for _, v344 in pairs(getconnections(v256.MouseButton1Click)) do 
+            pcall(function() v344:Fire(); end);
+        end 
+        for _, v346 in pairs(getconnections(v256.Activated)) do 
+            pcall(function() v346:Fire(); end);
+        end 
+    end 
+    pcall(function() 
+        v256.InputBegan:Fire({
+            UserInputType = Enum.UserInputType.MouseButton1,
+            UserInputState = Enum.UserInputState.Begin
+        });
+    end);
+end 
+
+-- Fungsi Filter/Check Kata-kata Terlarang / Non-Code
+local function v234(v259) 
+    local v261 = string.lower(v259);
+    if string.find(v261, "http") or string.find(v261, "www") or string.find(v261, "https") then 
+        return true;
+    end 
+    if string.find(v261, "system") then 
+        return true;
+    end 
+    local v262 = {
+        "join", "discord", "subscribe", "like", "follow", "server", "group", 
+        "event", "update", "admin", "owner", "winner", "reward", "congrats", 
+        "claimed", "redeemed", "invalid", "expired", "already", "thanks", 
+        "thank", "please", "pls", "help", "hello", "hi", "hey", "yo", "bro", 
+        "dude", "guys", "everyone", "gg", "ez", "lol", "lmao", "roblox"
+    };
+    for _, v350 in ipairs(v262) do 
+        if string.find(v261, v350) then 
+            return true;
+        end 
+    end 
+    return false;
+end 
+
+-- Task Loop Pengawas Chat "THE CODE IS..."
+task.spawn(function() 
+    while task.wait(0.5) do 
+        if v228 then 
+            local v293 = false;
+            for _, v331 in pairs(v10:GetChildren()) do 
+                if v331:IsA("ScreenGui") and v331.Name ~= "AutoRedeemerGui" then 
+                    for _, v352 in pairs(v331:GetDescendants()) do 
+                        if v352:IsA("TextLabel") or v352:IsA("TextBox") then 
+                            local v373 = string.lower(v352.Text or "");
+                            if string.find(v373, "the code is") then 
+                                v293 = true;
+                                break;
+                            end 
+                        end 
+                    end 
+                end 
+                if v293 then break; end 
+            end 
+            if v293 and not _G.AutoRedeem then 
+                v218.Text = "Detected: 'THE CODE IS...'!";
+                v231();
+            end 
+        end 
+    end 
+end);
+
+-- Fitur Disable Animations
+local v235 = false;
+local v236 = nil;
+
+local function v237() 
+    local v263 = v9.Character;
+    for _, v274 in pairs(workspace:GetDescendants()) do 
+        if v274:IsA("Animator") then 
+            if not (v263 and v274:IsDescendantOf(v263)) then 
+                for _, v324 in pairs(v274:GetPlayingAnimationTracks()) do 
+                    v324:Stop();
+                end 
+            end 
+        end 
+    end 
+end 
+
+v192.MouseButton1Click:Connect(function() 
+    v235 = not v235;
+    if v235 then 
+        v192.Text = "Disable Animations [ON]";
+        v192.BackgroundColor3 = Color3.fromRGB(50, 180, 80);
+        v237();
+        v236 = v15.Stepped:Connect(function() 
+            if v235 then 
+                v237();
+            end 
+        end);
+    else 
+        v192.Text = "Disable Animations [OFF]";
+        v192.BackgroundColor3 = Color3.fromRGB(120, 50, 150);
+        if v236 then 
+            v236:Disconnect();
+            v236 = nil;
+        end 
+    end 
+end);
+
+-- Fitur Boost FPS / Low Graphics
+local v238 = false;
+v205.MouseButton1Click:Connect(function() 
+    v238 = not v238;
+    if v238 then 
+        v205.Text = "FPS Boosted!";
+        v205.BackgroundColor3 = Color3.fromRGB(50, 180, 80);
+        v218.Text = "Boosted Low Graphics Loaded";
+
+        pcall(function() 
+            v18.GlobalShadows = false;
+            v18.FogEnd = 9000000000;
+            for _, v381 in pairs(v18:GetChildren()) do 
+                if v381:IsA("PostEffect") or v381:IsA("BlurEffect") or v381:IsA("SunRaysEffect") then 
+                    v381.Enabled = false;
+                end 
+            end 
+        end);
+
+        pcall(function() 
+            for _, v333 in pairs(workspace:GetDescendants()) do 
+                if v333:IsA("BasePart") and not v333:IsA("MeshPart") then 
+                    v333.Material = Enum.Material.SmoothPlastic;
+                    v333.Reflectance = 0;
+                elseif v333:IsA("Decal") or v333:IsA("Texture") then 
+                    v333.Transparent = 1;
+                elseif v333:IsA("ParticleEmitter") or v333:IsA("Smoke") then 
+                    v333.Enabled = false;
+                end 
+            end 
+        end);
+    else 
+        v205.Text = "Boost FPS / Low Graphics";
+        v205.BackgroundColor3 = Color3.fromRGB(150, 100, 30);
+        v218.Text = "FPS Boost Toggle Off";
+    end 
+end);
+
+-- Event Listener ReplicatedStorage untuk Deteksi Karakter/Kode Otomatis
+local function v239(v265) 
+    if v265:IsA("RemoteEvent") then 
+        v265.OnClientEvent:Connect(function(...) 
+            if not _G.AutoRedeem then return; end 
+            local v294 = {...};
+            for _, v300 in ipairs(v294) do 
+                if type(v300) == "string" and #v300 > 0 and #v300 <= 30 and not v234(v300) then 
+                    table.insert(v229, v300);
+                    v82.Text = tostring(#v229);
+                    if #v229 < 3 then 
+                        v218.Text = "Collecting: " .. #v229 .. " -> " .. table.concat(v229, "");
+                    else 
+                        local v364 = table.concat(v229, "");
+                        local v365, v366 = v230();
+                        if v365 then 
+                            v365.Text = v364;
+                            v218.Text = "Redeeming: " .. v364;
+                            v233(v366);
+                        end 
+                    end 
+                end 
+            end 
+        end);
+    end 
+end 
+
+for _, v267 in pairs(v12:GetDescendants()) do 
+    v239(v267);
+end 
+v12.DescendantAdded:Connect(function(v268) 
+    v239(v268);
+end);
+
+-- Event Tombol Utama Auto Redeem On/Off
+v94.MouseButton1Click:Connect(function() 
+    if _G.AutoRedeem then 
+        v232();
+    else 
+        v231();
+    end 
+end);
+
+-- Event Tombol Scan Chat On/Off
+v179.MouseButton1Click:Connect(function() 
+    v228 = not v228;
+    if v228 then 
+        v179.Text = "Scan Chat 'THE CODE IS...' [ON]";
+        v179.BackgroundColor3 = Color3.fromRGB(50, 180, 80);
+        v218.Text = "Scanning for 'THE CODE IS...'...";
+    else 
+        v179.Text = "Scan Chat 'THE CODE IS...' [OFF]";
+        v179.BackgroundColor3 = Color3.fromRGB(40, 90, 150);
+        v218.Text = "Scan Chat Stopped";
+    end 
+end);
+
+print("AUTO REDEEMER PRO👹 (NPC & Others No-Animation Only) Loaded!");
