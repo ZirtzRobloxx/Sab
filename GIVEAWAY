@@ -1,0 +1,1086 @@
+-- ==========================================
+-- ZIRTZ KEY SYSTEM (3 DAYS LICENSE)
+-- ==========================================
+
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+
+-- Link RAW Database Key dari Gist Kamu
+local KEY_DATABASE_URL = "https://gist.githubusercontent.com/ZirtzRobloxx/d2e708b9d9cdc17a5026fe5cdf7f1c31/raw/0162c78831196dbe742e1d8ee26782c416787a92/IDK.json" 
+
+local function parseDateTime(str)
+    local y, m, d, h, min, s = str:match("(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)")
+    if y then
+        return os.time({
+            year = tonumber(y),
+            month = tonumber(m),
+            day = tonumber(d),
+            hour = tonumber(h),
+            min = tonumber(min),
+            sec = tonumber(s)
+        })
+    end
+    return 0
+end
+
+local function validateKey(userKey)
+    userKey = userKey:gsub("%s+", "")
+
+    local success, response = pcall(function()
+        return game:HttpGet(KEY_DATABASE_URL)
+    end)
+
+    if not success or not response then
+        return false, "Gagal terhubung ke Database Key!"
+    end
+
+    local keyData
+    local jsonSuccess = pcall(function()
+        keyData = HttpService:JSONDecode(response)
+    end)
+
+    if not jsonSuccess or not keyData then
+        return false, "Format Database Key Salah!"
+    end
+
+    local expirationStr = keyData[userKey]
+
+    if not expirationStr then
+        return false, "Key tidak ditemukan / Salah!"
+    end
+
+    local expireTime = parseDateTime(expirationStr)
+    local currentTime = os.time()
+
+    if currentTime > expireTime then
+        return false, "Key sudah kadaluwarsa (Expired)!"
+    end
+
+    local sisaDetik = expireTime - currentTime
+    local sisaHari = math.floor(sisaDetik / 86400)
+    local sisaJam = math.floor((sisaDetik % 86400) / 3600)
+
+    return true, string.format("Key Aktif! Sisa: %d Hari %d Jam", sisaHari, sisaJam)
+end
+
+-- ==========================================
+-- UI INPUT KEY
+-- ==========================================
+
+local KeyVerified = false
+local KeyGui = Instance.new("ScreenGui")
+KeyGui.Name = "ZirtzKeySystem"
+KeyGui.ResetOnSpawn = false
+KeyGui.Parent = Player:WaitForChild("PlayerGui")
+
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 300, 0, 160)
+Frame.Position = UDim2.new(0.5, -150, 0.5, -80)
+Frame.BackgroundColor3 = Color3.fromRGB(20, 25, 32)
+Frame.Parent = KeyGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = Frame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Thickness = 1.5
+UIStroke.Color = Color3.fromRGB(0, 170, 255)
+UIStroke.Parent = Frame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.Text = "ZIRTZ REDEEMER - KEY SYSTEM"
+Title.TextColor3 = Color3.fromRGB(0, 170, 255)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 14
+Title.BackgroundTransparency = 1
+Title.Parent = Frame
+
+local TextBox = Instance.new("TextBox")
+TextBox.Size = UDim2.new(0.85, 0, 0, 32)
+TextBox.Position = UDim2.new(0.075, 0, 0.28, 0)
+TextBox.PlaceholderText = "Contoh: TRIALS8-8283-6728"
+TextBox.Text = ""
+TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.BackgroundColor3 = Color3.fromRGB(35, 40, 50)
+TextBox.Font = Enum.Font.SourceSans
+TextBox.TextSize = 12
+TextBox.Parent = Frame
+
+local BoxCorner = Instance.new("UICorner")
+BoxCorner.CornerRadius = UDim.new(0, 6)
+BoxCorner.Parent = TextBox
+
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Size = UDim2.new(1, 0, 0, 20)
+StatusLabel.Position = UDim2.new(0, 0, 0.53, 0)
+StatusLabel.Text = ""
+StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
+StatusLabel.Font = Enum.Font.SourceSans
+StatusLabel.TextSize = 11
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Parent = Frame
+
+local SubmitBtn = Instance.new("TextButton")
+SubmitBtn.Size = UDim2.new(0.85, 0, 0, 30)
+SubmitBtn.Position = UDim2.new(0.075, 0, 0.72, 0)
+SubmitBtn.Text = "VERIFIKASI KEY"
+SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 80)
+SubmitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+SubmitBtn.Font = Enum.Font.SourceSansBold
+SubmitBtn.TextSize = 12
+SubmitBtn.Parent = Frame
+
+local BtnCorner = Instance.new("UICorner")
+BtnCorner.CornerRadius = UDim.new(0, 6)
+BtnCorner.Parent = SubmitBtn
+
+SubmitBtn.Activated:Connect(function()
+    StatusLabel.Text = "Memeriksa Key..."
+    StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
+    
+    task.wait(0.3)
+    local isValid, msg = validateKey(TextBox.Text)
+    StatusLabel.Text = msg
+    
+    if isValid then
+        StatusLabel.TextColor3 = Color3.fromRGB(0, 255, 100)
+        task.wait(1)
+        KeyGui:Destroy()
+        KeyVerified = true
+    else
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 60, 60)
+    end
+end)
+
+repeat task.wait(0.5) until KeyVerified == true
+
+-- ==========================================
+-- ZIRTZ REDEEMER + AUTO RIDDLE SOLVER (HYBRID)
+-- GAME TARGET: STEAL A BRAINROT
+-- DIBUAT OLEH: Zirtzmc222 / ZirtzRobloxx
+-- ==========================================
+
+local PlayerGui = Player:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local Stats = game:GetService("Stats")
+local SoundService = game:GetService("SoundService")
+local UserService = game:GetService("UserService")
+
+local CREATOR_ID = 9526397572
+local BACKGROUND_IMAGE_ID = "rbxassetid://84072421254715"
+
+if PlayerGui:FindFirstChild("ZirtzRedeemerUI") then
+    PlayerGui:FindFirstChild("ZirtzRedeemerUI"):Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ZirtzRedeemerUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Parent = PlayerGui
+
+local SoundOn = Instance.new("Sound")
+SoundOn.SoundId = "rbxassetid://6026982302"
+SoundOn.Volume = 0.5
+SoundOn.Parent = SoundService
+
+local SoundOff = Instance.new("Sound")
+SoundOff.SoundId = "rbxassetid://6026982302"
+SoundOff.Volume = 0.3
+SoundOff.PlaybackSpeed = 0.7
+SoundOff.Parent = SoundService
+
+local lastSubmittedText = ""
+
+local targetParts = 3
+local caseMode = "OFF"
+local autoRiddleActive = false
+local doubleSubmitActive = true
+
+task.spawn(function()
+    pcall(function() SoundOn:Play() end)
+
+    local IntroText = Instance.new("TextLabel")
+    IntroText.Name = "IntroText"
+    IntroText.Parent = ScreenGui
+    IntroText.AnchorPoint = Vector2.new(0.5, 0.5)
+    IntroText.Position = UDim2.new(0.5, 0, 0.5, 0)
+    IntroText.Size = UDim2.new(0, 300, 0, 50)
+    IntroText.BackgroundTransparency = 1
+    IntroText.Text = "Made By ZirtzRobloxx"
+    IntroText.TextColor3 = Color3.fromRGB(0, 170, 255)
+    IntroText.TextTransparency = 1
+    IntroText.Font = Enum.Font.SourceSansBold
+    IntroText.TextSize = 24
+    IntroText.ZIndex = 10
+
+    local IntroStroke = Instance.new("UIStroke")
+    IntroStroke.Parent = IntroText
+    IntroStroke.Thickness = 1.5
+    IntroStroke.Color = Color3.fromRGB(0, 50, 100)
+    IntroStroke.Transparency = 1
+
+    TweenService:Create(IntroText, TweenInfo.new(0.2), {TextTransparency = 0}):Play()
+    TweenService:Create(IntroStroke, TweenInfo.new(0.2), {Transparency = 0}):Play()
+    
+    local targetPos = UDim2.new(0.5, 0, 0.35, 0)
+    TweenService:Create(IntroText, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Position = targetPos,
+        TextTransparency = 1
+    }):Play()
+    TweenService:Create(IntroStroke, TweenInfo.new(0.3), {Transparency = 1}):Play()
+
+    task.wait(0.5)
+    IntroText:Destroy()
+end)
+
+local MainContainer = Instance.new("Frame")
+MainContainer.Name = "MainContainer"
+MainContainer.Parent = ScreenGui
+MainContainer.Position = UDim2.new(0.5, -150, 0, 20)
+MainContainer.Size = UDim2.new(0, 300, 0, 36)
+MainContainer.BackgroundColor3 = Color3.fromRGB(20, 25, 32)
+MainContainer.BackgroundTransparency = 0.25
+MainContainer.ClipsDescendants = true
+MainContainer.ZIndex = 5
+
+local MainBgImage = Instance.new("ImageLabel")
+MainBgImage.Parent = MainContainer
+MainBgImage.Size = UDim2.new(1, 0, 1, 0)
+MainBgImage.Image = BACKGROUND_IMAGE_ID
+MainBgImage.BackgroundTransparency = 1
+MainBgImage.ScaleType = Enum.ScaleType.Crop
+MainBgImage.ImageTransparency = 0.35
+MainBgImage.ZIndex = 5
+
+local ContainerCorner = Instance.new("UICorner")
+ContainerCorner.CornerRadius = UDim.new(0, 16)
+ContainerCorner.Parent = MainContainer
+
+local ContainerStroke = Instance.new("UIStroke")
+ContainerStroke.Thickness = 1.5
+ContainerStroke.Parent = MainContainer
+
+local ContainerGradient = Instance.new("UIGradient")
+ContainerGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+    ColorSequenceKeypoint.new(0.2, Color3.fromRGB(255, 127, 0)),
+    ColorSequenceKeypoint.new(0.4, Color3.fromRGB(0, 255, 0)),
+    ColorSequenceKeypoint.new(0.6, Color3.fromRGB(0, 191, 255)),
+    ColorSequenceKeypoint.new(0.8, Color3.fromRGB(139, 0, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+})
+ContainerGradient.Parent = ContainerStroke
+
+local hueRotation = 0
+RunService.RenderStepped:Connect(function(delta)
+    hueRotation = (hueRotation + delta * 60) % 360
+    ContainerGradient.Rotation = hueRotation
+end)
+
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Name = "ZirtzToggleButton"
+ToggleButton.Parent = ScreenGui
+ToggleButton.Position = UDim2.new(0.5, -30, 0.5, 0)
+ToggleButton.Size = UDim2.new(0, 60, 0, 60)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(100, 115, 140)
+ToggleButton.BackgroundTransparency = 0.35
+ToggleButton.Text = "Z🤡"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Font = Enum.Font.SourceSansBold
+ToggleButton.TextSize = 22
+ToggleButton.ZIndex = 15
+ToggleButton.Active = true
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0, 18)
+ToggleCorner.Parent = ToggleButton
+
+local ToggleStroke = Instance.new("UIStroke")
+ToggleStroke.Thickness = 1.5
+ToggleStroke.Color = Color3.fromRGB(255, 255, 255)
+ToggleStroke.Transparency = 0.5
+ToggleStroke.Parent = ToggleButton
+
+local toggleDragging = false
+local toggleDragStart, toggleStartPos
+local isDragMoved = false
+
+ToggleButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        toggleDragging = true
+        isDragMoved = false
+        toggleDragStart = input.Position
+        toggleStartPos = ToggleButton.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if toggleDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - toggleDragStart
+        if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then
+            isDragMoved = true
+        end
+        ToggleButton.Position = UDim2.new(toggleStartPos.X.Scale, toggleStartPos.X.Offset + delta.X, toggleStartPos.Y.Scale, toggleStartPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        toggleDragging = false
+    end
+end)
+
+ToggleButton.Activated:Connect(function()
+    if not isDragMoved then
+        MainContainer.Visible = not MainContainer.Visible
+    end
+end)
+
+local StatusDot = Instance.new("Frame")
+StatusDot.Parent = MainContainer
+StatusDot.Position = UDim2.new(0, 12, 0, 14)
+StatusDot.Size = UDim2.new(0, 8, 0, 8)
+StatusDot.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+StatusDot.ZIndex = 6
+
+local DotCorner = Instance.new("UICorner")
+DotCorner.CornerRadius = UDim.new(1, 0)
+DotCorner.Parent = StatusDot
+
+local BarTitle = Instance.new("TextLabel")
+BarTitle.Parent = MainContainer
+BarTitle.Position = UDim2.new(0, 26, 0, 0)
+BarTitle.Size = UDim2.new(0, 100, 0, 36)
+BarTitle.Text = "Zirt'z Redeemer"
+BarTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+BarTitle.Font = Enum.Font.SourceSansBold
+BarTitle.TextSize = 11
+BarTitle.TextXAlignment = Enum.TextXAlignment.Left
+BarTitle.BackgroundTransparency = 1
+BarTitle.ZIndex = 6
+
+local StatsLabel = Instance.new("TextLabel")
+StatsLabel.Parent = MainContainer
+StatsLabel.Position = UDim2.new(0, 120, 0, 0)
+StatsLabel.Size = UDim2.new(0, 60, 0, 36)
+StatsLabel.Text = "60fps|0ms"
+StatsLabel.TextColor3 = Color3.fromRGB(180, 210, 230)
+StatsLabel.Font = Enum.Font.SourceSans
+StatsLabel.TextSize = 10
+StatsLabel.BackgroundTransparency = 1
+StatsLabel.ZIndex = 6
+
+local ActionBtn = Instance.new("TextButton")
+ActionBtn.Parent = MainContainer
+ActionBtn.Position = UDim2.new(1, -112, 0, 9)
+ActionBtn.Size = UDim2.new(0, 42, 0, 18)
+ActionBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+ActionBtn.Text = "START"
+ActionBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ActionBtn.Font = Enum.Font.SourceSansBold
+ActionBtn.TextSize = 10
+ActionBtn.ZIndex = 7
+
+local ActionCorner = Instance.new("UICorner")
+ActionCorner.CornerRadius = UDim.new(0, 9)
+ActionCorner.Parent = ActionBtn
+
+local CounterBadge = Instance.new("TextLabel")
+CounterBadge.Parent = MainContainer
+CounterBadge.Position = UDim2.new(1, -64, 0, 9)
+CounterBadge.Size = UDim2.new(0, 32, 0, 18)
+CounterBadge.BackgroundColor3 = Color3.fromRGB(40, 50, 60)
+CounterBadge.Text = "0/" .. targetParts
+CounterBadge.TextColor3 = Color3.fromRGB(100, 255, 180)
+CounterBadge.Font = Enum.Font.SourceSansBold
+CounterBadge.TextSize = 10
+CounterBadge.ZIndex = 6
+
+local BadgeCorner = Instance.new("UICorner")
+BadgeCorner.CornerRadius = UDim.new(0, 9)
+BadgeCorner.Parent = CounterBadge
+
+local ExpandBtn = Instance.new("TextButton")
+ExpandBtn.Parent = MainContainer
+ExpandBtn.Position = UDim2.new(1, -26, 0, 9)
+ExpandBtn.Size = UDim2.new(0, 18, 0, 18)
+ExpandBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+ExpandBtn.Text = "+"
+ExpandBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExpandBtn.Font = Enum.Font.SourceSansBold
+ExpandBtn.TextSize = 12
+ExpandBtn.ZIndex = 7
+
+local ExpandCorner = Instance.new("UICorner")
+ExpandCorner.CornerRadius = UDim.new(1, 0)
+ExpandCorner.Parent = ExpandBtn
+
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Name = "ContentFrame"
+ContentFrame.Parent = MainContainer
+ContentFrame.Position = UDim2.new(0, 10, 0, 40)
+ContentFrame.Size = UDim2.new(1, -20, 0, 314)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.ZIndex = 6
+
+local ModeBtn = Instance.new("TextButton")
+ModeBtn.Name = "ModeBtn"
+ModeBtn.Parent = ContentFrame
+ModeBtn.Position = UDim2.new(0, 0, 0, 0)
+ModeBtn.Size = UDim2.new(0.48, 0, 0, 24)
+ModeBtn.BackgroundColor3 = Color3.fromRGB(30, 120, 160)
+ModeBtn.Text = "MODE: 3 PARTS"
+ModeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ModeBtn.Font = Enum.Font.SourceSansBold
+ModeBtn.TextSize = 10
+ModeBtn.ZIndex = 7
+local ModeCorner = Instance.new("UICorner")
+ModeCorner.CornerRadius = UDim.new(0, 6)
+ModeCorner.Parent = ModeBtn
+
+local CaseBtn = Instance.new("TextButton")
+CaseBtn.Name = "CaseBtn"
+CaseBtn.Parent = ContentFrame
+CaseBtn.Position = UDim2.new(0.52, 0, 0, 0)
+CaseBtn.Size = UDim2.new(0.48, 0, 0, 24)
+CaseBtn.BackgroundColor3 = Color3.fromRGB(110, 70, 160)
+CaseBtn.Text = "CASE: OFF"
+CaseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CaseBtn.Font = Enum.Font.SourceSansBold
+CaseBtn.TextSize = 10
+CaseBtn.ZIndex = 7
+local CaseCorner = Instance.new("UICorner")
+CaseCorner.CornerRadius = UDim.new(0, 6)
+CaseCorner.Parent = CaseBtn
+
+local DoubleSubmitBtn = Instance.new("TextButton")
+DoubleSubmitBtn.Name = "DoubleSubmitBtn"
+DoubleSubmitBtn.Parent = ContentFrame
+DoubleSubmitBtn.Position = UDim2.new(0, 0, 0, 29)
+DoubleSubmitBtn.Size = UDim2.new(1, 0, 0, 24)
+DoubleSubmitBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 80)
+DoubleSubmitBtn.Text = "DOUBLE SUBMIT (00.0s): ON"
+DoubleSubmitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+DoubleSubmitBtn.Font = Enum.Font.SourceSansBold
+DoubleSubmitBtn.TextSize = 10
+DoubleSubmitBtn.ZIndex = 7
+local DoubleSubmitCorner = Instance.new("UICorner")
+DoubleSubmitCorner.CornerRadius = UDim.new(0, 6)
+DoubleSubmitCorner.Parent = DoubleSubmitBtn
+
+local CheckTextBtn = Instance.new("TextButton")
+CheckTextBtn.Name = "CheckTextBtn"
+CheckTextBtn.Parent = ContentFrame
+CheckTextBtn.Position = UDim2.new(0, 0, 0, 58)
+CheckTextBtn.Size = UDim2.new(1, 0, 0, 24)
+CheckTextBtn.BackgroundColor3 = Color3.fromRGB(40, 90, 150)
+CheckTextBtn.Text = "CHECK CODE TEXT: OFF"
+CheckTextBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CheckTextBtn.Font = Enum.Font.SourceSansBold
+CheckTextBtn.TextSize = 10
+CheckTextBtn.ZIndex = 7
+local CheckCorner = Instance.new("UICorner")
+CheckCorner.CornerRadius = UDim.new(0, 6)
+CheckCorner.Parent = CheckTextBtn
+
+local RiddleBtn = Instance.new("TextButton")
+RiddleBtn.Name = "RiddleBtn"
+RiddleBtn.Parent = ContentFrame
+RiddleBtn.Position = UDim2.new(0, 0, 0, 87)
+RiddleBtn.Size = UDim2.new(1, 0, 0, 24)
+RiddleBtn.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+RiddleBtn.Text = "AUTO RIDDLE AI: OFF"
+RiddleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RiddleBtn.Font = Enum.Font.SourceSansBold
+RiddleBtn.TextSize = 10
+RiddleBtn.ZIndex = 7
+local RiddleCorner = Instance.new("UICorner")
+RiddleCorner.CornerRadius = UDim.new(0, 6)
+RiddleCorner.Parent = RiddleBtn
+
+local NoAnimBtn = Instance.new("TextButton")
+NoAnimBtn.Name = "NoAnimBtn"
+NoAnimBtn.Parent = ContentFrame
+NoAnimBtn.Position = UDim2.new(0, 0, 0, 116)
+NoAnimBtn.Size = UDim2.new(1, 0, 0, 24)
+NoAnimBtn.BackgroundColor3 = Color3.fromRGB(120, 50, 150)
+NoAnimBtn.Text = "NO ANIMATION: OFF"
+NoAnimBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+NoAnimBtn.Font = Enum.Font.SourceSansBold
+NoAnimBtn.TextSize = 10
+NoAnimBtn.ZIndex = 7
+local NoAnimCorner = Instance.new("UICorner")
+NoAnimCorner.CornerRadius = UDim.new(0, 6)
+NoAnimCorner.Parent = NoAnimBtn
+
+local AntiLagBtn = Instance.new("TextButton")
+AntiLagBtn.Name = "AntiLagBtn"
+AntiLagBtn.Parent = ContentFrame
+AntiLagBtn.Position = UDim2.new(0, 0, 0, 145)
+AntiLagBtn.Size = UDim2.new(1, 0, 0, 24)
+AntiLagBtn.BackgroundColor3 = Color3.fromRGB(150, 100, 30)
+AntiLagBtn.Text = "ANTI LAG: OFF"
+AntiLagBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+AntiLagBtn.Font = Enum.Font.SourceSansBold
+AntiLagBtn.TextSize = 10
+AntiLagBtn.ZIndex = 7
+local AntiLagCorner = Instance.new("UICorner")
+AntiLagCorner.CornerRadius = UDim.new(0, 6)
+AntiLagCorner.Parent = AntiLagBtn
+
+local BackTextBtn = Instance.new("TextButton")
+BackTextBtn.Name = "BackTextBtn"
+BackTextBtn.Parent = ContentFrame
+BackTextBtn.Position = UDim2.new(0, 0, 0, 174)
+BackTextBtn.Size = UDim2.new(1, 0, 0, 24)
+BackTextBtn.BackgroundColor3 = Color3.fromRGB(60, 140, 120)
+BackTextBtn.Text = "BACK THE TEXT"
+BackTextBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+BackTextBtn.Font = Enum.Font.SourceSansBold
+BackTextBtn.TextSize = 10
+BackTextBtn.ZIndex = 7
+local BackTextCorner = Instance.new("UICorner")
+BackTextCorner.CornerRadius = UDim.new(0, 6)
+BackTextCorner.Parent = BackTextBtn
+
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Parent = ContentFrame
+StatusLabel.Position = UDim2.new(0, 0, 0, 203)
+StatusLabel.Size = UDim2.new(1, 0, 0, 20)
+StatusLabel.Text = "Status: Off"
+StatusLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Font = Enum.Font.SourceSansItalic
+StatusLabel.TextSize = 10
+StatusLabel.ZIndex = 7
+
+local ProfileFrame = Instance.new("Frame")
+ProfileFrame.Name = "ProfileFrame"
+ProfileFrame.Parent = ContentFrame
+ProfileFrame.Position = UDim2.new(0, 0, 0, 227)
+ProfileFrame.Size = UDim2.new(1, 0, 0, 42)
+ProfileFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+ProfileFrame.BackgroundTransparency = 0.4
+ProfileFrame.ZIndex = 6
+
+local ProfileCorner = Instance.new("UICorner")
+ProfileCorner.CornerRadius = UDim.new(0, 8)
+ProfileCorner.Parent = ProfileFrame
+
+local AvatarImage = Instance.new("ImageLabel")
+AvatarImage.Parent = ProfileFrame
+AvatarImage.Position = UDim2.new(0, 6, 0, 5)
+AvatarImage.Size = UDim2.new(0, 32, 0, 32)
+AvatarImage.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+AvatarImage.Image = "rbxthumb://type=AvatarHeadShot&id=" .. CREATOR_ID .. "&w=150&h=150"
+AvatarImage.ZIndex = 7
+
+local AvatarCorner = Instance.new("UICorner")
+AvatarCorner.CornerRadius = UDim.new(1, 0)
+AvatarCorner.Parent = AvatarImage
+
+local CreatorNameLabel = Instance.new("TextLabel")
+CreatorNameLabel.Parent = ProfileFrame
+CreatorNameLabel.Position = UDim2.new(0, 44, 0, 4)
+CreatorNameLabel.Size = UDim2.new(1, -50, 0, 16)
+CreatorNameLabel.Text = "Loading User..."
+CreatorNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+CreatorNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+CreatorNameLabel.Font = Enum.Font.SourceSansBold
+CreatorNameLabel.TextSize = 11
+CreatorNameLabel.BackgroundTransparency = 1
+CreatorNameLabel.ZIndex = 7
+
+local CreditLabel = Instance.new("TextLabel")
+CreditLabel.Parent = ProfileFrame
+CreditLabel.Position = UDim2.new(0, 44, 0, 20)
+CreditLabel.Size = UDim2.new(1, -50, 0, 18)
+CreditLabel.Text = "Zirtzmc222 / ZirtzRobloxx"
+CreditLabel.TextColor3 = Color3.fromRGB(0, 200, 255)
+CreditLabel.TextXAlignment = Enum.TextXAlignment.Left
+CreditLabel.Font = Enum.Font.SourceSans
+CreditLabel.TextSize = 10
+CreditLabel.BackgroundTransparency = 1
+CreditLabel.ZIndex = 7
+
+local isExpanded = false
+ExpandBtn.Activated:Connect(function()
+    isExpanded = not isExpanded
+    if isExpanded then
+        ExpandBtn.Text = "-"
+        MainContainer.Size = UDim2.new(0, 300, 0, 324)
+    else
+        ExpandBtn.Text = "+"
+        MainContainer.Size = UDim2.new(0, 300, 0, 36)
+    end
+end)
+
+ModeBtn.Activated:Connect(function()
+    targetParts = targetParts + 1
+    if targetParts > 5 then targetParts = 1 end
+    ModeBtn.Text = "MODE: " .. targetParts .. " PARTS"
+    CounterBadge.Text = "0/" .. targetParts
+end)
+
+CaseBtn.Activated:Connect(function()
+    if caseMode == "OFF" then
+        caseMode = "AA"
+        CaseBtn.Text = "CASE: AA"
+    elseif caseMode == "AA" then
+        caseMode = "aa"
+        CaseBtn.Text = "CASE: aa"
+    else
+        caseMode = "OFF"
+        CaseBtn.Text = "CASE: OFF"
+    end
+end)
+
+DoubleSubmitBtn.Activated:Connect(function()
+    doubleSubmitActive = not doubleSubmitActive
+    if doubleSubmitActive then
+        DoubleSubmitBtn.Text = "DOUBLE SUBMIT (00.0s): ON"
+        DoubleSubmitBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 80)
+    else
+        DoubleSubmitBtn.Text = "DOUBLE SUBMIT (00.0s): OFF"
+        DoubleSubmitBtn.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+    end
+end)
+
+RiddleBtn.Activated:Connect(function()
+    autoRiddleActive = not autoRiddleActive
+    if autoRiddleActive then
+        RiddleBtn.Text = "AUTO RIDDLE AI: ON"
+        RiddleBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 80)
+        StatusLabel.Text = "Auto Riddle AI Active!"
+        pcall(function() SoundOn:Play() end)
+    else
+        RiddleBtn.Text = "AUTO RIDDLE AI: OFF"
+        RiddleBtn.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+        StatusLabel.Text = "Auto Riddle AI Disabled"
+        pcall(function() SoundOff:Play() end)
+    end
+end)
+
+local dragging, dragStart, startPos
+MainContainer.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainContainer.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        MainContainer.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+local lastUpdate = tick()
+local frameCount = 0
+RunService.RenderStepped:Connect(function()
+    frameCount = frameCount + 1
+    if tick() - lastUpdate >= 1 then
+        local fps = math.floor(frameCount / (tick() - lastUpdate))
+        local ping = 0
+        pcall(function()
+            ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
+        end)
+        StatsLabel.Text = fps .. "fps|" .. ping .. "ms"
+        frameCount = 0
+        lastUpdate = tick()
+    end
+end)
+
+task.spawn(function()
+    local success, userInfo = pcall(function()
+        return UserService:GetUserInfosByUserIdsAsync({CREATOR_ID})
+    end)
+    if success and userInfo and userInfo[1] then
+        CreatorNameLabel.Text = "@" .. userInfo[1].Username
+    else
+        CreatorNameLabel.Text = "ID: " .. CREATOR_ID
+    end
+end)
+
+local function isBlacklisted(text)
+    local lowerText = string.lower(text)
+    if string.find(lowerText, "code%s*is") 
+    or string.find(lowerText, "the%s*code%s*is") 
+    or string.find(lowerText, "use%s*code") 
+    or string.find(lowerText, "sfx") 
+    or string.find(lowerText, "top") 
+    or string.find(lowerText, "bottom") 
+    or string.find(lowerText, "fire") 
+    or string.find(lowerText, "returning%d+") 
+    or string.find(lowerText, "stockupdate") then
+        return true
+    end
+
+    local blacklist = {
+        "starting", "in:", "live", "now", "event", "start", "play", "claim", 
+        "redeem", "health", "mana", "level", "lvl", "submit", 
+        "friend boost", "global", "transparency", "namelabel", 
+        "stroke", "expired", "invalid", "success", "here", "purchase", 
+        "buy", "price", "robux", "cost", "explosion", "boom",
+        "ground", "bee", "id", "generation", "steals", "idsteals", 
+        "back", "returning", "restock", "stockupdate"
+    }
+
+    for _, word in ipairs(blacklist) do
+        if string.find(lowerText, word) then return true end
+    end
+    return false
+end
+
+local cachedTextBox, cachedConfirmBtn = nil, nil
+local function dapatkanUIElemen()
+    if cachedTextBox and cachedConfirmBtn and cachedTextBox.Parent and cachedConfirmBtn.Parent then
+        return cachedTextBox, cachedConfirmBtn
+    end
+
+    for _, gui in pairs(PlayerGui:GetChildren()) do
+        if gui:IsA("ScreenGui") and gui.Name ~= "ZirtzRedeemerUI" then
+            local codesFrame = gui:FindFirstChild("Codes", true)
+            if codesFrame then
+                local codeRedeemObj = codesFrame:FindFirstChild("CodeRedeem")
+                local confirmBtn = codesFrame:FindFirstChild("Confirm") or codesFrame:FindFirstChild("Submit")
+                local realTextBox = nil
+                if codeRedeemObj then
+                    realTextBox = codeRedeemObj:IsA("TextBox") and codeRedeemObj or codeRedeemObj:FindFirstChildOfClass("TextBox", true)
+                end
+                if realTextBox and confirmBtn then
+                    cachedTextBox, cachedConfirmBtn = realTextBox, confirmBtn
+                    return realTextBox, confirmBtn
+                end
+            end
+        end
+    end
+
+    for _, gui in pairs(PlayerGui:GetChildren()) do
+        if gui:IsA("ScreenGui") and gui.Name ~= "ZirtzRedeemerUI" then
+            for _, descendant in pairs(gui:GetDescendants()) do
+                if descendant:IsA("TextBox") then
+                    local parent = descendant.Parent
+                    local confirmBtn = parent and (parent:FindFirstChild("Confirm") or parent:FindFirstChild("Submit") or parent:FindFirstChildOfClass("TextButton"))
+                    if confirmBtn then
+                        cachedTextBox, cachedConfirmBtn = descendant, confirmBtn
+                        return descendant, confirmBtn
+                    end
+                end
+            end
+        end
+    end
+    return nil, nil
+end
+
+local function tekanTombolConfirm(confirmBtn)
+    if not confirmBtn then return end
+    
+    local function eksekusiKlik()
+        task.spawn(function()
+            if firesignal then
+                firesignal(confirmBtn.MouseButton1Click)
+                firesignal(confirmBtn.Activated)
+                firesignal(confirmBtn.MouseButton1Down)
+                firesignal(confirmBtn.MouseButton1Up)
+            end
+        end)
+
+        task.spawn(function()
+            if getconnections then
+                for _, connection in pairs(getconnections(confirmBtn.MouseButton1Click)) do connection:Fire() end
+                for _, connection in pairs(getconnections(confirmBtn.Activated)) do connection:Fire() end
+                for _, connection in pairs(getconnections(confirmBtn.MouseButton1Down)) do connection:Fire() end
+            end
+        end)
+    end
+
+    eksekusiKlik()
+
+    if doubleSubmitActive then
+        eksekusiKlik()
+    end
+end
+
+local function solveRiddleWithAI(riddleText)
+    StatusLabel.Text = "AI Solving Riddle..."
+    local prompt = "Answer this riddle or brainrot question with ONLY the direct answer word or phrase, no extra punctuation: " .. riddleText
+    local encodedPrompt = HttpService:UrlEncode(prompt)
+    local fallbackUrl = "https://text.pollinations.ai/" .. encodedPrompt
+
+    local success, response = pcall(function()
+        return game:HttpGet(fallbackUrl)
+    end)
+
+    if success and response then
+        local cleanAnswer = response:gsub("\n", ""):gsub("%s+$", ""):gsub("^%s+", "")
+        return cleanAnswer
+    else
+        return nil
+    end
+end
+
+_G.AutoRedeem = false
+local autoCheckTextActive = false
+local antreanTeks = {}
+
+local function aktifkanAutoRedeem()
+    _G.AutoRedeem = true
+    antreanTeks = {}
+    pcall(function() SoundOn:Play() end)
+    StatusDot.BackgroundColor3 = Color3.fromRGB(60, 255, 60)
+    ActionBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 50)
+    ActionBtn.Text = "STOP"
+    CounterBadge.Text = "0/" .. targetParts
+    StatusLabel.Text = "Status: Active & Waiting Notif..."
+    task.spawn(dapatkanUIElemen)
+end
+
+local function matikanAutoRedeem()
+    _G.AutoRedeem = false
+    antreanTeks = {}
+    pcall(function() SoundOff:Play() end)
+    StatusDot.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+    ActionBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    ActionBtn.Text = "START"
+    CounterBadge.Text = "0/" .. targetParts
+    StatusLabel.Text = "Status: Off"
+end
+
+local function submitDirectAnswer(answerText)
+    if not answerText or answerText == "" then return end
+    
+    local targetTextBox, targetConfirmBtn = dapatkanUIElemen()
+    if targetTextBox then
+        targetTextBox.Text = answerText
+        lastSubmittedText = answerText
+        StatusLabel.Text = "AI SUBMITTED: " .. answerText
+        if targetConfirmBtn then
+            tekanTombolConfirm(targetConfirmBtn)
+        end
+    else
+        StatusLabel.Text = "Textbox Not Found for AI!"
+    end
+end
+
+local function processIncomingPart(arg)
+    if isBlacklisted(arg) then return end
+    
+    table.insert(antreanTeks, arg)
+    local jumlahAntrean = #antreanTeks
+    CounterBadge.Text = jumlahAntrean .. "/" .. targetParts
+    
+    local totalKode = table.concat(antreanTeks, "")
+    
+    if caseMode == "AA" then
+        totalKode = string.upper(totalKode)
+    elseif caseMode == "aa" then
+        totalKode = string.lower(totalKode)
+    end
+
+    local targetTextBox, targetConfirmBtn = dapatkanUIElemen()
+
+    if targetTextBox then 
+        targetTextBox.Text = totalKode 
+    end
+
+    if jumlahAntrean < targetParts then
+        StatusLabel.Text = "Pre-written (" .. jumlahAntrean .. "/" .. targetParts .. "): " .. totalKode
+    else
+        lastSubmittedText = totalKode
+        
+        if targetConfirmBtn then 
+            tekanTombolConfirm(targetConfirmBtn) 
+        end
+        
+        StatusLabel.Text = "SUBMITTED INSTANT (00.0s): " .. totalKode
+        
+        _G.AutoRedeem = false
+        antreanTeks = {}
+        StatusDot.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+        ActionBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        ActionBtn.Text = "START"
+    end
+end
+
+local function isTopNotificationObject(obj)
+    local current = obj
+    while current and current ~= PlayerGui do
+        local name = string.lower(current.Name)
+        if name == "topnotification" then
+            return true
+        end
+        current = current.Parent
+    end
+    return false
+end
+
+local function periksaTeksNotifikasi(obj)
+    if not obj:IsA("TextLabel") and not obj:IsA("TextButton") then return end
+    if not isTopNotificationObject(obj) then return end
+
+    local teks = obj.Text
+    if type(teks) ~= "string" or #teks == 0 or #teks > 120 then return end
+
+    local lowerTeks = string.lower(teks)
+    
+    if autoRiddleActive and #teks > 10 and (teks:find("%?") or lowerTeks:find("riddle") or lowerTeks:find("what") or lowerTeks:find("who")) then
+        task.spawn(function()
+            local answer = solveRiddleWithAI(teks)
+            if answer then
+                submitDirectAnswer(answer)
+            end
+        end)
+        return
+    end
+
+    if autoCheckTextActive and not _G.AutoRedeem then
+        if string.find(lowerTeks, "use code") or string.find(lowerTeks, "code is") or string.find(lowerTeks, "the code is") then
+            StatusLabel.Text = "Code Trigger Detected!"
+            aktifkanAutoRedeem()
+            return
+        end
+    end
+
+    if _G.AutoRedeem then
+        processIncomingPart(teks)
+    end
+end
+
+for _, obj in pairs(PlayerGui:GetDescendants()) do
+    if isTopNotificationObject(obj) then
+        if obj:IsA("TextLabel") or obj:IsA("TextButton") then
+            periksaTeksNotifikasi(obj)
+            obj:GetPropertyChangedSignal("Text"):Connect(function()
+                periksaTeksNotifikasi(obj)
+            end)
+        end
+    end
+end
+
+PlayerGui.DescendantAdded:Connect(function(obj)
+    if isTopNotificationObject(obj) then
+        if obj:IsA("TextLabel") or obj:IsA("TextButton") then
+            periksaTeksNotifikasi(obj)
+            obj:GetPropertyChangedSignal("Text"):Connect(function()
+                periksaTeksNotifikasi(obj)
+            end)
+        end
+    end
+end)
+
+BackTextBtn.Activated:Connect(function()
+    if lastSubmittedText ~= "" then
+        local tBox = dapatkanUIElemen()
+        if tBox then
+            tBox.Text = lastSubmittedText
+            StatusLabel.Text = "Restored: " .. lastSubmittedText
+        else
+            StatusLabel.Text = "TextBox Not Found!"
+        end
+    else
+        StatusLabel.Text = "No Text History Available!"
+    end
+end)
+
+local noAnimActive = false
+local animConnections = {}
+
+local function applyNoAnimToCharacter(char)
+    if not char or char == Player.Character then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        for _, tr in pairs(hum:GetPlayingAnimationTracks()) do pcall(function() tr:Stop(0) end) end
+        local conn = hum.AnimationPlayed:Connect(function(track)
+            if noAnimActive then pcall(function() track:Stop(0) end) end
+        end)
+        table.insert(animConnections, conn)
+    end
+end
+
+NoAnimBtn.Activated:Connect(function()
+    noAnimActive = not noAnimActive
+    if noAnimActive then
+        NoAnimBtn.Text = "NO ANIMATION: ON"
+        NoAnimBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 80)
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= Player and p.Character then applyNoAnimToCharacter(p.Character) end
+        end
+    else
+        NoAnimBtn.Text = "NO ANIMATION: OFF"
+        NoAnimBtn.BackgroundColor3 = Color3.fromRGB(120, 50, 150)
+        for _, conn in pairs(animConnections) do if conn then conn:Disconnect() end end
+        animConnections = {}
+    end
+end)
+
+local antiLagActive = false
+local originalParticleRates = {}
+local descendantConnection = nil
+
+local function applyOptimization(v)
+    if v:IsA("ParticleEmitter") then
+        if not originalParticleRates[v] then originalParticleRates[v] = v.Rate end
+        v.Rate = math.max(0.1, originalParticleRates[v] * 0.005)
+    elseif v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") or v:IsA("Beam") then
+        v.Enabled = false
+    elseif v:IsA("Decal") or v:IsA("Texture") then
+        v.Transparency = 1
+    elseif v:IsA("BasePart") then
+        v.Material = Enum.Material.Plastic
+        v.Reflectance = 0
+        v.CastShadow = false
+    end
+end
+
+AntiLagBtn.Activated:Connect(function()
+    antiLagActive = not antiLagActive
+    if antiLagActive then
+        AntiLagBtn.Text = "ANTI LAG: ON"
+        AntiLagBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 80)
+        for _, v in pairs(workspace:GetDescendants()) do applyOptimization(v) end
+        descendantConnection = workspace.DescendantAdded:Connect(function(v)
+            if antiLagActive then applyOptimization(v) end
+        end)
+        StatusLabel.Text = "Anti Lag Active!"
+    else
+        AntiLagBtn.Text = "ANTI LAG: OFF"
+        AntiLagBtn.BackgroundColor3 = Color3.fromRGB(150, 100, 30)
+        if descendantConnection then descendantConnection:Disconnect() end
+        StatusLabel.Text = "Anti Lag Deactivated"
+    end
+end)
+
+ActionBtn.Activated:Connect(function()
+    if _G.AutoRedeem then matikanAutoRedeem() else aktifkanAutoRedeem() end
+end)
+
+CheckTextBtn.Activated:Connect(function()
+    autoCheckTextActive = not autoCheckTextActive
+    if autoCheckTextActive then
+        CheckTextBtn.Text = "CHECK CODE TEXT: ON"
+        CheckTextBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 80)
+        StatusLabel.Text = "Scanning TopNotif Only..."
+    else
+        CheckTextBtn.Text = "CHECK CODE TEXT: OFF"
+        CheckTextBtn.BackgroundColor3 = Color3.fromRGB(40, 90, 150)
+        StatusLabel.Text = "Check Code Text Disabled"
+    end
+end)
+
+print("Zirt'z Redeemer Hybrid with 3-Days Key System Loaded!")
+
