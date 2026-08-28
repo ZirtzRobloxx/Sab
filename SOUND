@@ -1,0 +1,281 @@
+-- Global cleanup UI lama jika re-execute
+if _G.__SOUND_UI then pcall(function() _G.__SOUND_UI:Destroy() end) end
+if _G.__XZIRTZ_UI then pcall(function() _G.__XZIRTZ_UI:Destroy() end) end
+
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local Plots = workspace:WaitForChild("Plots")
+
+-- Variable Fitur See Incoming Base
+local isIncomingBaseEnabled = false
+local incomingBaseConns = {}
+local anchor, bb, topLabel, bottomLabel
+
+local BASE_POSITIONS = {
+	Vector3.new(-342.439, 10.399, 113.107),
+	Vector3.new(-342.439, 10.465,   6.107),
+	Vector3.new(-476.752, 10.465, 114.107),
+	Vector3.new(-476.752, 10.465,   7.107),
+	Vector3.new(-342.440, 10.464, 220.107),
+	Vector3.new(-476.752, 10.465, 221.107),
+	Vector3.new(-342.439, 10.465,-100.893),
+	Vector3.new(-476.752, 10.465, -99.893),
+}
+local MATCH_TOL = 6
+local EMPTY_TEXT = "Empty Base"
+local ARROW = utf8.char(0x2B07)
+
+-- Logika Internal Incoming Base
+local bases = {}
+local connected = {}
+
+local function baseIndexFor(model)
+	local ok, cf = pcall(function() return (model:GetBoundingBox()) end)
+	if not ok then return nil end
+	local p, bestI, bestD = cf.Position
+	for i, bp in ipairs(BASE_POSITIONS) do
+		local dx, dz = p.X - bp.X, p.Z - bp.Z
+		local d = math.sqrt(dx * dx + dz * dz)
+		if not bestD or d < bestD then bestI, bestD = i, d end
+	end
+	return (bestD and bestD <= MATCH_TOL) and bestI or nil
+end
+
+local function isEmpty(label)
+	return (label.Text:gsub("^%s+", ""):gsub("%s+$", "")) == EMPTY_TEXT
+end
+
+local function recompute()
+	if not isIncomingBaseEnabled or not anchor or not bb then return end
+	local targetIdx
+	for i = 1, #BASE_POSITIONS do
+		local b = bases[i]
+		if b and b.label and isEmpty(b.label) then targetIdx = i break end
+	end
+	if targetIdx then
+		anchor.CFrame = bases[targetIdx].cf
+		bb.Enabled = true
+	else
+		bb.Enabled = false
+	end
+end
+
+local function connectLabel(label)
+	if connected[label] then return end
+	connected[label] = true
+	table.insert(incomingBaseConns, label:GetPropertyChangedSignal("Text"):Connect(recompute))
+end
+
+local function scan()
+	for _, plot in ipairs(Plots:GetChildren()) do
+		local sign  = plot:FindFirstChild("PlotSign")
+		local model = sign and sign:FindFirstChild("Model")
+		local gui   = sign and sign:FindFirstChild("SurfaceGui")
+		local fr    = gui and gui:FindFirstChild("Frame")
+		local label = fr and fr:FindFirstChild("TextLabel")
+		if model and label then
+			local idx = baseIndexFor(model)
+			if idx then
+				bases[idx] = { label = label, cf = (select(1, model:GetBoundingBox())) }
+				connectLabel(label)
+			end
+		end
+	end
+	recompute()
+end
+
+local function startIncomingBase()
+	anchor = Instance.new("Part")
+	anchor.Name = "__NextBaseAnchor"
+	anchor.Anchored, anchor.CanCollide, anchor.CanQuery, anchor.CanTouch = true, false, false, false
+	anchor.Transparency = 1
+	anchor.Size = Vector3.new(1, 1, 1)
+	anchor.Parent = CoreGui
+
+	bb = Instance.new("BillboardGui")
+	bb.Name = "NextBaseBillboard"
+	bb.Adornee = anchor
+	bb.Size = UDim2.fromScale(32, 13)
+	bb.StudsOffset = Vector3.new(0, 10, 0)
+	bb.MaxDistance = math.huge
+	bb.AlwaysOnTop = true
+	bb.LightInfluence = 0
+	bb.Enabled = false
+	bb.Parent = anchor
+
+	topLabel = Instance.new("TextLabel", bb)
+	topLabel.BackgroundTransparency = 1
+	topLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+	topLabel.Position = UDim2.fromScale(0.5, 0.30)
+	topLabel.Size = UDim2.fromScale(0.95, 0.50)
+	topLabel.Font = Enum.Font.GothamBlack
+	topLabel.Text = ARROW .. "  NEXT  " .. ARROW
+	topLabel.TextScaled = true
+	topLabel.TextColor3 = Color3.fromRGB(255, 60, 60)
+	topLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+	topLabel.TextStrokeTransparency = 0
+
+	bottomLabel = Instance.new("TextLabel", bb)
+	bottomLabel.BackgroundTransparency = 1
+	bottomLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+	bottomLabel.Position = UDim2.fromScale(0.5, 0.72)
+	bottomLabel.Size = UDim2.fromScale(0.95, 0.42)
+	bottomLabel.Font = Enum.Font.GothamBlack
+	bottomLabel.Text = "EMPTY BASE"
+	bottomLabel.TextScaled = true
+	bottomLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	bottomLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+	bottomLabel.TextStrokeTransparency = 0
+
+	scan()
+
+	table.insert(incomingBaseConns, Plots.DescendantAdded:Connect(function(d)
+		if d:IsA("TextLabel") then task.defer(scan) end
+	end))
+	table.insert(incomingBaseConns, Plots.ChildAdded:Connect(function() task.defer(scan) end))
+end
+
+local function stopIncomingBase()
+	for _, c in ipairs(incomingBaseConns) do pcall(function() c:Disconnect() end) end
+	incomingBaseConns = {}
+	connected = {}
+	bases = {}
+	if anchor then anchor:Destroy() anchor = nil end
+end
+
+-- ================= GUI BUILDING =================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SOUND_HUB_UI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = CoreGui
+_G.__SOUND_UI = ScreenGui
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 240, 0, 100)
+MainFrame.Position = UDim2.new(0.5, -120, 0.4, -50)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Parent = ScreenGui
+
+local MainUICorner = Instance.new("UICorner", MainFrame)
+MainUICorner.CornerRadius = UDim.new(0, 8)
+
+local TitleBar = Instance.new("Frame", MainFrame)
+TitleBar.Name = "TitleBar"
+TitleBar.Size = UDim2.new(1, 0, 0, 30)
+TitleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+TitleBar.BorderSizePixel = 0
+
+local TitleCorner = Instance.new("UICorner", TitleBar)
+TitleCorner.CornerRadius = UDim.new(0, 8)
+
+local TitleLabel = Instance.new("TextLabel", TitleBar)
+TitleLabel.Size = UDim2.new(1, -60, 1, 0)
+TitleLabel.Position = UDim2.new(0, 10, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "SOUND HUB"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextSize = 13
+
+local ToggleMinBtn = Instance.new("TextButton", TitleBar)
+ToggleMinBtn.Size = UDim2.new(0, 25, 0, 25)
+ToggleMinBtn.Position = UDim2.new(1, -52, 0, 2.5)
+ToggleMinBtn.BackgroundTransparency = 1
+ToggleMinBtn.Text = "-"
+ToggleMinBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+ToggleMinBtn.Font = Enum.Font.GothamBold
+ToggleMinBtn.TextSize = 16
+
+local CloseBtn = Instance.new("TextButton", TitleBar)
+CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+CloseBtn.Position = UDim2.new(1, -27, 0, 2.5)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 13
+
+local ContentFrame = Instance.new("Frame", MainFrame)
+ContentFrame.Name = "ContentFrame"
+ContentFrame.Size = UDim2.new(1, 0, 1, -30)
+ContentFrame.Position = UDim2.new(0, 0, 0, 30)
+ContentFrame.BackgroundTransparency = 1
+
+local ToggleBaseBtn = Instance.new("TextButton", ContentFrame)
+ToggleBaseBtn.Size = UDim2.new(0.9, 0, 0, 40)
+ToggleBaseBtn.Position = UDim2.new(0.05, 0, 0.2, 0)
+ToggleBaseBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+ToggleBaseBtn.Text = "SEE INCOMING BASE: [ OFF ]"
+ToggleBaseBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+ToggleBaseBtn.Font = Enum.Font.GothamBold
+ToggleBaseBtn.TextSize = 11
+
+local BtnCorner = Instance.new("UICorner", ToggleBaseBtn)
+BtnCorner.CornerRadius = UDim.new(0, 6)
+
+-- Sistem Drag UI
+local dragging, dragInput, dragStart, startPos
+TitleBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = MainFrame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+TitleBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - dragStart
+		MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+-- Event Tombol
+local isMinimized = false
+ToggleMinBtn.MouseButton1Click:Connect(function()
+	isMinimized = not isMinimized
+	ContentFrame.Visible = not isMinimized
+	if isMinimized then
+		MainFrame.Size = UDim2.new(0, 240, 0, 30)
+		ToggleMinBtn.Text = "+"
+	else
+		MainFrame.Size = UDim2.new(0, 240, 0, 100)
+		ToggleMinBtn.Text = "-"
+	end
+end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+	stopIncomingBase()
+	ScreenGui:Destroy()
+end)
+
+ToggleBaseBtn.MouseButton1Click:Connect(function()
+	isIncomingBaseEnabled = not isIncomingBaseEnabled
+	if isIncomingBaseEnabled then
+		ToggleBaseBtn.Text = "SEE INCOMING BASE: [ ON ]"
+		ToggleBaseBtn.TextColor3 = Color3.fromRGB(85, 255, 127)
+		ToggleBaseBtn.BackgroundColor3 = Color3.fromRGB(35, 65, 45)
+		startIncomingBase()
+	else
+		ToggleBaseBtn.Text = "SEE INCOMING BASE: [ OFF ]"
+		ToggleBaseBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+		ToggleBaseBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+		stopIncomingBase()
+	end
+end)
+
